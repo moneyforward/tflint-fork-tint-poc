@@ -56,10 +56,11 @@ func NewCLI(outStream io.Writer, errStream io.Writer) (*CLI, error) {
 func (cli *CLI) Run(args []string) int {
 	var opts Options
 	parser := flags.NewParser(&opts, flags.HelpFlag)
-	parser.Usage = "--chdir=DIR/--recursive [OPTIONS]"
+	parser.Usage = "[flags]"
 	parser.UnknownOptionHandler = unknownOptionHandler
 	// Parse commandline flag
 	args, err := parser.ParseArgs(args)
+	InjectTintConfig(&opts)
 	// Set up output formatter
 	cli.formatter = &formatter.Formatter{
 		Stdout: cli.outStream,

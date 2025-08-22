@@ -11,34 +11,75 @@ import (
 
 // Options is an option specified by arguments.
 type Options struct {
-	Version                bool     `short:"v" long:"version" description:"Print TFLint version"`
-	Init                   bool     `long:"init" description:"Install plugins"`
-	Langserver             bool     `long:"langserver" description:"Start language server"`
-	Format                 string   `short:"f" long:"format" description:"Output format" choice:"default" choice:"json" choice:"checkstyle" choice:"junit" choice:"compact" choice:"sarif"`
-	Config                 string   `short:"c" long:"config" description:"Config file name (default: .tflint.hcl)" value-name:"FILE"`
-	IgnoreModules          []string `long:"ignore-module" description:"Ignore module sources" value-name:"SOURCE"`
-	EnableRules            []string `long:"enable-rule" description:"Enable rules from the command line" value-name:"RULE_NAME"`
-	DisableRules           []string `long:"disable-rule" description:"Disable rules from the command line" value-name:"RULE_NAME"`
-	Only                   []string `long:"only" description:"Enable only this rule, disabling all other defaults. Can be specified multiple times" value-name:"RULE_NAME"`
-	EnablePlugins          []string `long:"enable-plugin" description:"Enable plugins from the command line" value-name:"PLUGIN_NAME"`
-	Varfiles               []string `long:"var-file" description:"Terraform variable file name" value-name:"FILE"`
-	Variables              []string `long:"var" description:"Set a Terraform variable" value-name:"'foo=bar'"`
-	CallModuleType         *string  `long:"call-module-type" description:"Types of module to call (default: local)" choice:"all" choice:"local" choice:"none"`
-	Chdir                  string   `long:"chdir" description:"Switch to a different working directory before executing the command" value-name:"DIR"`
-	Recursive              bool     `long:"recursive" description:"Run command in each directory recursively"`
-	Filter                 []string `long:"filter" description:"Filter issues by file names or globs" value-name:"FILE"`
-	Force                  *bool    `long:"force" description:"Return zero exit status even if issues found"`
-	MinimumFailureSeverity string   `long:"minimum-failure-severity" description:"Sets minimum severity level for exiting with a non-zero error code" choice:"error" choice:"warning" choice:"notice"`
-	Color                  bool     `long:"color" description:"Enable colorized output"`
-	NoColor                bool     `long:"no-color" description:"Disable colorized output"`
-	Fix                    bool     `long:"fix" description:"Fix issues automatically"`
-	NoParallelRunners      bool     `long:"no-parallel-runners" description:"Disable per-runner parallelism"`
-	MaxWorkers             *int     `long:"max-workers" description:"Set maximum number of workers in recursive inspection (default: number of CPUs)" value-name:"N"`
+	TerraformRoot string `short:"t" long:"terraform-root" description:"path to the services-terraform repository"`
+	Service       string `short:"s" long:"service" description:"service to inspect"` // TODO: Clarify what 'service' means
+	// Env            string `short:"e" long:"env" description:"environment to inspect(default: prod)"`
+	Rule     string `short:"r" long:"rule" description:"specific rule to run(supports multiple rules separated by comma)"`
+	Rules    string `long:"rules" description:"same as --rule"`
+	Standard string `short:"S" long:"standard" description:"standard to use"`
+	List     bool   `short:"l" long:"list" description:"list all rules in TINT"`
+	JSON     bool   `short:"j" long:"json" description:"output in JSON format"`
+	Version  bool   `short:"v" long:"version" description:"output version information"`
+
+	// TFLint Options
+	Init                   bool     `long:"init" description:"Install plugins" hidden:"true"`
+	Langserver             bool     `long:"langserver" description:"Start language server" hidden:"true"`
+	Format                 string   `short:"f" long:"format" description:"Output format" choice:"default" choice:"json" choice:"checkstyle" choice:"junit" choice:"compact" choice:"sarif" hidden:"true"`
+	Config                 string   `short:"c" long:"config" description:"Config file name (default: .tflint.hcl)" value-name:"FILE" hidden:"true"`
+	IgnoreModules          []string `long:"ignore-module" description:"Ignore module sources" value-name:"SOURCE" hidden:"true"`
+	EnableRules            []string `long:"enable-rule" description:"Enable rules from the command line" value-name:"RULE_NAME" hidden:"true"`
+	DisableRules           []string `long:"disable-rule" description:"Disable rules from the command line" value-name:"RULE_NAME" hidden:"true"`
+	Only                   []string `long:"only" description:"Enable only this rule, disabling all other defaults. Can be specified multiple times" value-name:"RULE_NAME" hidden:"true"`
+	EnablePlugins          []string `long:"enable-plugin" description:"Enable plugins from the command line" value-name:"PLUGIN_NAME" hidden:"true"`
+	Varfiles               []string `long:"var-file" description:"Terraform variable file name" value-name:"FILE" hidden:"true"`
+	Variables              []string `long:"var" description:"Set a Terraform variable" value-name:"'foo=bar'" hidden:"true"`
+	CallModuleType         *string  `long:"call-module-type" description:"Types of module to call (default: local)" choice:"all" choice:"local" choice:"none" hidden:"true"`
+	Chdir                  string   `long:"chdir" description:"Switch to a different working directory before executing the command" value-name:"DIR" hidden:"true"`
+	Recursive              bool     `long:"recursive" description:"Run command in each directory recursively" hidden:"true"`
+	Filter                 []string `long:"filter" description:"Filter issues by file names or globs" value-name:"FILE" hidden:"true"`
+	Force                  *bool    `long:"force" description:"Return zero exit status even if issues found" hidden:"true"`
+	MinimumFailureSeverity string   `long:"minimum-failure-severity" description:"Sets minimum severity level for exiting with a non-zero error code" choice:"error" choice:"warning" choice:"notice" hidden:"true"`
+	Color                  bool     `long:"color" description:"Enable colorized output" hidden:"true"`
+	NoColor                bool     `long:"no-color" description:"Disable colorized output" hidden:"true"`
+	Fix                    bool     `long:"fix" description:"Fix issues automatically" hidden:"true"`
+	NoParallelRunners      bool     `long:"no-parallel-runners" description:"Disable per-runner parallelism" hidden:"true"`
+	MaxWorkers             *int     `long:"max-workers" description:"Set maximum number of workers in recursive inspection (default: number of CPUs)" value-name:"N" hidden:"true"`
 	ActAsBundledPlugin     bool     `long:"act-as-bundled-plugin" hidden:"true"`
 	ActAsWorker            bool     `long:"act-as-worker" hidden:"true"`
 }
 
 func (opts *Options) toConfig() *tflint.Config {
+	// Tint CLI Options
+	log.Printf("[DEBUG] CLI Options")
+	log.Printf("[DEBUG]   TerraformRoot: %s", opts.TerraformRoot)
+	log.Printf("[DEBUG]   Service: %s", opts.Service)
+	log.Printf("[DEBUG]   Rule: %s", opts.Rule)
+	log.Printf("[DEBUG]   Rules: %s", opts.Rules)
+	log.Printf("[DEBUG]   Standard: %s", opts.Standard)
+	log.Printf("[DEBUG]   List: %t", opts.List)
+	log.Printf("[DEBUG]   JSON: %t", opts.JSON)
+
+	// Collect all rules to enable
+	rules := map[string]*tflint.RuleConfig{}
+
+	// Add rules from opts.Rule and opts.Rules (comma-separated)
+	for _, ruleStr := range []string{opts.Rule, opts.Rules} {
+		if ruleStr == "" {
+			continue
+		}
+		for _, rule := range strings.Split(ruleStr, ",") {
+			rule = strings.TrimSpace(rule)
+			if rule == "" {
+				continue
+			}
+			rules[rule] = &tflint.RuleConfig{
+				Name:    rule,
+				Enabled: true,
+				Body:    nil,
+			}
+		}
+	}
+	// Original TFLint Options
 	ignoreModules := map[string]bool{}
 	for _, module := range opts.IgnoreModules {
 		// For the backward compatibility, allow specifying like "source1,source2" style
@@ -74,7 +115,7 @@ func (opts *Options) toConfig() *tflint.Config {
 		forceSet = true
 	}
 
-	log.Printf("[DEBUG] CLI Options")
+	log.Printf("[DEBUG] TFLint CLI Options")
 	log.Printf("[DEBUG]   CallModuleType: %s", callModuleType)
 	log.Printf("[DEBUG]   Force: %t", force)
 	log.Printf("[DEBUG]   Format: %s", opts.Format)
@@ -89,7 +130,6 @@ func (opts *Options) toConfig() *tflint.Config {
 		log.Printf("[DEBUG]     %s: %t", name, ignore)
 	}
 
-	rules := map[string]*tflint.RuleConfig{}
 	for _, rule := range append(opts.Only, opts.EnableRules...) {
 		rules[rule] = &tflint.RuleConfig{
 			Name:    rule,
