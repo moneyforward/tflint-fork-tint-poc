@@ -1,4 +1,4 @@
-# TFLint
+# TFLint MF Fork PoC
 [![Build Status](https://github.com/terraform-linters/tflint/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/terraform-linters/tflint/actions)
 [![GitHub release](https://img.shields.io/github/release/terraform-linters/tflint.svg)](https://github.com/terraform-linters/tflint/releases/latest)
 [![Terraform Compatibility](https://img.shields.io/badge/terraform-%3E%3D%201.0-blue)](docs/user-guide/compatibility.md)
