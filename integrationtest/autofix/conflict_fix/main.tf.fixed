@@ -1,4 +1,0 @@
-# autofixed
-resource "aws_instance" "autofixed_foo" {
-  instance_type = "t2.micro" # autofixed
-}

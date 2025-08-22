@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	colorable "github.com/mattn/go-colorable"
-	"github.com/terraform-linters/tflint/cmd"
+	"github.com/moneyforward/tflint-fork-tint-poc/cmd"
 )
 
 func main() {

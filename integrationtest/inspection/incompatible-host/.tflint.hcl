@@ -1,3 +1,0 @@
-plugin "incompatiblehost" {
-  enabled = true
-}
